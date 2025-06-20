@@ -116,7 +116,7 @@ if __name__ == '__main__':
             config_dict = yaml.load(f, Loader=yaml.SafeLoader)
         except yaml.YAMLError as exc:
             assert False, "default.yaml error: {}".format(exc)
-    params = '/home/lzy/桌面/pymarl-rlcard-self-play/config'
+    params = './config'
     # Load algorithm and env base configs
     env_config = _get_config(params, "doudizhu", "envs")
     alg_config = _get_config(params, "rlcard", "algs")
