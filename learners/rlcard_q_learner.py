@@ -11,7 +11,7 @@ from modules.mixers.nmix import Mixer
 from modules.mixers.vdn import VDNMixer
 from modules.mixers.qatten import QattenMixer
 from envs.matrix_game import print_matrix_status
-from utils.rl_utils import build_td_lambda_targets, build_q_lambda_targets
+from utils.rl_utils import build_rlcard_td_lambda_targets, build_q_lambda_targets
 import torch as th
 from torch.optim import RMSprop, Adam
 import numpy as np
@@ -95,7 +95,7 @@ class RLCardLearner:
                 q_values = agent_outs[i]
                 action_idx = actions[idx][t]
                 assert action_idx < len(q_values)
-                chosen_action_qvals[(t % 3) * 8 + idx][t//3] = q_values[action_idx]
+                chosen_action_qvals[(t % 3) * batch.batch_size + idx][t//3] = q_values[action_idx]
                 cur_max_actions[idx][t] = q_values.max(dim=0, keepdim=True)[1]
 
 
@@ -116,7 +116,7 @@ class RLCardLearner:
                     q_values = target_agent_outs[i]
                     action_idx = cur_max_actions[idx][t]
                     assert action_idx < len(q_values)
-                    target_max_qvals[(t % 3) * 8 + idx][t // 3] = q_values[action_idx]
+                    target_max_qvals[(t % 3) * batch.batch_size + idx][t // 3] = q_values[action_idx]
                 target_mac_out.append(target_agent_outs)
 
 
@@ -129,7 +129,7 @@ class RLCardLearner:
                 targets = build_q_lambda_targets(rewards, terminated, mask, target_max_qvals, qvals,
                                                  self.args.gamma, self.args.td_lambda)
             else:
-                targets = build_td_lambda_targets(rewards, terminated, mask, target_max_qvals,
+                targets = build_rlcard_td_lambda_targets(rewards, terminated, mask, target_max_qvals,
                                                   self.args.n_agents, self.args.gamma, self.args.td_lambda)
 
         # # Mixer

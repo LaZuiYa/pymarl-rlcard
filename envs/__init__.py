@@ -8,7 +8,7 @@ from .starcraft import StarCraft2Env
 from .matrix_game import OneStepMatrixGame
 from .stag_hunt import StagHunt
 from .macf import MultiAgentCar
-from smacv2.env.starcraft2.wrapper import StarCraftCapabilityEnvWrapper
+
 from rlcard.envs.doudizhu import DoudizhuEnv
 try:
     gfootball = True
@@ -25,7 +25,7 @@ REGISTRY["sc2"] = partial(env_fn, env=StarCraft2Env)
 REGISTRY["stag_hunt"] = partial(env_fn, env=StagHunt)
 REGISTRY["one_step_matrix_game"] = partial(env_fn, env=OneStepMatrixGame)
 REGISTRY["macf"] = partial(env_fn, env=MultiAgentCar)
-REGISTRY["sc2wrapped"] = partial(env_fn, env=StarCraftCapabilityEnvWrapper) #smacv2
+
 
 REGISTRY["doudizhu"] = partial(env_fn, env=DoudizhuEnv) #smacv2
 if gfootball:

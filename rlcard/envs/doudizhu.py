@@ -17,12 +17,12 @@ class DoudizhuEnv(Env):
         self._ACTION_2_ID = ACTION_2_ID
         self._ID_2_ACTION = ID_2_ACTION
         self.n_agents = 3
-        self.episode_limit = 200
+        self.episode_limit = 100
         self.n_actions = 1
         self.name = 'doudizhu'
         self.game = Game()
         super().__init__(kwargs)
-        self.state_shape = [[256], [256], [256]]
+        self.state_shape = [[219], [219], [219]]
         self.action_shape = [[54] for _ in range(self.num_players)]
 
     def _extract_state(self, state):
@@ -53,8 +53,9 @@ class DoudizhuEnv(Env):
                                   current_hand,
                                   others_hand,
                                   last_2_actions,
-                                  landlord_up_num_cards_left,
-                                  landlord_down_num_cards_left))
+                                  # landlord_up_num_cards_left,
+                                  # landlord_down_num_cards_left
+                                  ))
         else:
             landlord_played_cards = _cards2array(state['played_cards'][0])
             for i, action in reversed(state['trace']):
@@ -77,8 +78,9 @@ class DoudizhuEnv(Env):
                                   current_hand,
                                   others_hand,
                                   last_2_actions,
-                                  landlord_num_cards_left,
-                                  teammate_num_cards_left))
+                                  # landlord_num_cards_left,
+                                  # teammate_num_cards_left
+                                  ))
 
         extracted_state = OrderedDict({'obs': obs, 'legal_actions': self.get_avail_actions()})
         extracted_state['raw_obs'] = state
@@ -144,10 +146,10 @@ class DoudizhuEnv(Env):
                     "episode_limit": self.episode_limit}
         return env_info
     def get_state_size(self):
-        return 259
+        return 219
 
     def get_obs_size(self):
-        return 259
+        return 219
     def get_total_actions(self):
 
         return self.n_actions

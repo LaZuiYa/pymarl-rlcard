@@ -89,7 +89,9 @@ class RlCardRunner:
         self.t = 0
         self.env_steps_this_run = 0
 
-    def run(self, test_mode=False, model_palyer_id = [0]):
+    def run(self, test_mode=False, model_palyer_id=None):
+        if model_palyer_id is None:
+            model_palyer_id = [0]
         self.reset()
 
         all_terminated = False
@@ -188,6 +190,18 @@ class RlCardRunner:
                     # if data["terminated"]:
                     #     final_env_infos.append(data["info"])
                     if data["terminated"] : # and not data["info"].get("episode_limit", False)
+                        trace = data["state"]["trace"]
+
+                        for tt in range(len(trace) - 3, -1, -1):
+                            if tt % 3 == 0 and trace[tt+1][1]=='pass'and trace[tt+2][1] == 'pass':
+                                self.batch["reward"][idx][tt] = 0.1
+                            else:
+                                for next_t in [tt + 1, tt + 2]:
+                                    if next_t < len(trace) and next_t % 3 == 0:
+                                        if trace[next_t][1] == 'pass':
+                                            self.batch["reward"][idx][tt] = 0.1
+
+
                         env_terminated = True
                         if data["player_id"] == 1: # lardland win
                             self.batch["reward"][idx][self.t + 1] = -1

@@ -67,7 +67,7 @@ class RlCardMAC(BasicMAC):
 
     def _build_inputs(self, batch, t):
         avail_actions = [ep[t] for ep in batch["avail_actions"]]
-        obs = [ep[t]["obs"] if ep[t].get("obs") is not None else np.zeros(259) for ep in batch["obs"]]
+        obs = [ep[t]["obs"] if ep[t].get("obs") is not None else np.zeros(219) for ep in batch["obs"]]
         valid_indices = [i for i, acts in enumerate(avail_actions) if acts]
         bs = batch.batch_size
         device = 'cuda' if th.cuda.is_available() else 'cpu'
