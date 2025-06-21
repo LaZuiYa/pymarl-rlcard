@@ -10,7 +10,6 @@ from modules.mixers.dmix import DMixer
 from modules.mixers.nmix import Mixer
 from modules.mixers.vdn import VDNMixer
 from modules.mixers.qatten import QattenMixer
-from envs.matrix_game import print_matrix_status
 from utils.rl_utils import build_rlcard_td_lambda_targets, build_q_lambda_targets
 import torch as th
 from torch.optim import RMSprop, Adam
@@ -23,7 +22,7 @@ class RLCardLearner:
         self.args = args
         self.mac = mac
         self.logger = logger
-
+        self.n_agents = args.n_agents
         self.last_target_update_episode = 0
         self.device = th.device('cuda' if args.use_cuda else 'cpu')
         self.params = mac.parameters()
@@ -59,6 +58,9 @@ class RLCardLearner:
             self.priority_max = float('-inf')
             self.priority_min = float('inf')
 
+    def build_util(self, tensor, n_agents=3):
+        slices = [tensor[:, i::n_agents, ...] for i in range(n_agents)]
+        return th.cat(slices, dim=0)
     def train(self, batch: EpisodeBatch, t_env: int, episode_num: int, per_weight=None):
         # Get the relevant quantities
         rewards = batch["reward"][:, :-1]
@@ -67,23 +69,27 @@ class RLCardLearner:
         mask = batch["filled"][:, :-1].float()
         # mask[:, 1:] = mask[:, 1:] * (1 - terminated[:, :-1])
 
-        rewards0 = rewards[:, ::3, :]
-        rewards1 = rewards[:, 1::3, :]
-        rewards2 = rewards[:, 2::3, :]
-        rewards = th.cat([rewards0, rewards1, rewards2], dim=0)
-        mask0 = mask[:, ::3, :]
-        mask1 = mask[:, 1::3, :]
-        mask2 = mask[:, 2::3, :]
-        mask = th.cat([mask0, mask1, mask2], dim=0)
-        terminated0 = terminated[:, ::3, :]
-        terminated1 = terminated[:, 1::3, :]
-        terminated2 = terminated[:, 2::3, :]
-        terminated = th.cat([terminated0, terminated1, terminated2], dim=0)
+        rewards = self.build_util(rewards, n_agents=self.n_agents)
+        mask = self.build_util(mask, n_agents=self.n_agents)
+        terminated = self.build_util(terminated, n_agents=self.n_agents)
+        # rewards0 = rewards[:, ::3, :]
+        # rewards1 = rewards[:, 1::3, :]
+        # rewards2 = rewards[:, 2::3, :]
+        # rewards = th.cat([rewards0, rewards1, rewards2], dim=0)
+        # mask0 = mask[:, ::3, :]
+        # mask1 = mask[:, 1::3, :]
+        # mask2 = mask[:, 2::3, :]
+        # mask = th.cat([mask0, mask1, mask2], dim=0)
+        # terminated0 = terminated[:, ::3, :]
+        # terminated1 = terminated[:, 1::3, :]
+        # terminated2 = terminated[:, 2::3, :]
+        # terminated = th.cat([terminated0, terminated1, terminated2], dim=0)
+
         # Calculate estimated Q-Values
         self.mac.agent.train()
         mac_out = []
         self.mac.init_hidden(batch.batch_size)
-        chosen_action_qvals = th.zeros([batch.batch_size*3, (batch.max_seq_length)//3 , 1], device=self.device, dtype=th.float32)
+        chosen_action_qvals = th.zeros([batch.batch_size*self.n_agents, (batch.max_seq_length)//self.n_agents , 1], device=self.device, dtype=th.float32)
         cur_max_actions = th.zeros([batch.batch_size, (batch.max_seq_length) , 1],  device=self.device, dtype=th.int)
         for t in range(max([len([x for x in ep if x]) for ep in batch["obs"]])-1):
             agent_outs = self.mac.forward(batch, t=t)
@@ -95,11 +101,11 @@ class RLCardLearner:
                 q_values = agent_outs[i]
                 action_idx = actions[idx][t]
                 assert action_idx < len(q_values)
-                chosen_action_qvals[(t % 3) * batch.batch_size + idx][t//3] = q_values[action_idx]
+                chosen_action_qvals[(t % self.n_agents) * batch.batch_size + idx][t//self.n_agents] = q_values[action_idx]
                 cur_max_actions[idx][t] = q_values.max(dim=0, keepdim=True)[1]
 
 
-        target_max_qvals = th.zeros([batch.batch_size*3, (batch.max_seq_length)//3 , 1], device=self.device,
+        target_max_qvals = th.zeros([batch.batch_size*self.n_agents, (batch.max_seq_length)//self.n_agents , 1], device=self.device,
                                     dtype=th.float32)
         # Calculate the Q-Values necessary for the target
         with th.no_grad():
@@ -116,7 +122,7 @@ class RLCardLearner:
                     q_values = target_agent_outs[i]
                     action_idx = cur_max_actions[idx][t]
                     assert action_idx < len(q_values)
-                    target_max_qvals[(t % 3) * batch.batch_size + idx][t // 3] = q_values[action_idx]
+                    target_max_qvals[(t % self.n_agents) * batch.batch_size + idx][t // self.n_agents] = q_values[action_idx]
                 target_mac_out.append(target_agent_outs)
 
 
@@ -174,9 +180,6 @@ class RLCardLearner:
                                  t_env)
             self.log_stats_t = t_env
 
-            # print estimated matrix
-            if self.args.env == "one_step_matrix_game":
-                print_matrix_status(batch, self.mixer, mac_out)
 
         # return info
         info = {}

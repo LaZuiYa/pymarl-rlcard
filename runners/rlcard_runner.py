@@ -108,12 +108,12 @@ class RlCardRunner:
             self.mac.model_player_id = model_palyer_id
         else:
             # self.mac.model_player_id = [1,2]
-            if self.t_env <= 3000000:
-                self.mac.model_player_id = [random.choice([0, 1, 2])] #np.random.choice([0,1,2],  p=[0.2, 0.4, 0.4])
-            elif 3000000<self.t_env <= 5000000:
-                self.mac.model_player_id = random.sample([0, 1, 2], 2)
-            else:
-                self.mac.model_player_id = [0,1,2]
+            # if self.t_env <= 3000000:
+            #     self.mac.model_player_id = [random.choice([0, 1, 2])] #np.random.choice([0,1,2],  p=[0.2, 0.4, 0.4])
+            # elif 3000000<self.t_env <= 5000000:
+            #     self.mac.model_player_id = random.sample([0, 1, 2], 2)
+            # else:
+            self.mac.model_player_id = [0,1,2]
         while True:
 
             # Pass the entire batch of experiences up till now to the agents.
