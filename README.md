@@ -26,7 +26,7 @@ This project bridges [RLCard](https://github.com/datamllab/rlcard) and [PyMARL](
 ### 🚀 Efficient Training with Competitive Performance
 
 Our model achieves **\~84% win rate** against RLCard's rule-based AI after just **0.6million games** (roughly **1 day** of training), while DouZero reports **\~90%** with **200 million games over 30 days**.
-Despite using only **\~1.5% of DouZero's training samples**, we reach comparable performance — demonstrating remarkable **training efficiency**.
+Despite using only **\~0.3% of DouZero's training samples**, we reach comparable performance — demonstrating remarkable **training efficiency**.
 
 All training is done on **consumer hardware**:
 💻 **RTX 4070 Ti Super** + 🧠 **Intel i5-14600KF** on Ubuntu 22.04,
