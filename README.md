@@ -43,9 +43,6 @@ making our approach much more **accessible and lightweight** than previous metho
 
 ### 📊 Training Visualization via Weights & Biases (WandB)
 
-
-### 📊 Training Visualization via Weights & Biases (WandB)
-
 * Tracks training metrics in real time using [WandB](https://wandb.ai/), fully integrated via PyMARL’s logging backend.
 
 ---
