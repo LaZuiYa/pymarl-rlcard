@@ -1,4 +1,4 @@
-以下是根据你的要求撰写的 GitHub 项目 README 草稿，你可以根据项目名称和具体文件路径进一步补充细节：
+
 
 ---
 
@@ -83,4 +83,3 @@ Please **star** this repository and **cite** our work if it helps your research 
 
 ---
 
-需要我帮你加上 badge、结构目录或具体命令运行示例等内容吗？
